@@ -32,7 +32,6 @@
   shell: certbot --nginx -d {{ target_domain }} --non-interactive --agree-tos -m {{ email }}
   when: ssl_cert_stat.stat.exists == False
 
-# 0 12 * * * /usr/bin/certbot renew --quiet
 - name: Add a cronn job to auto renew certificates if one doesn't already exist
   become: yes
   cron:

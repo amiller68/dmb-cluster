@@ -1,0 +1,22 @@
+# Start our IPFS service on the host
+- hosts: all
+  name: Run Ipfs
+  tasks:
+
+  - name: Check if the /home/ipfs/.ipfs directory exists
+    become: yes
+    stat: 
+      path: /home/ipfs/.ipfs
+    register: ipfs_dir_stat
+
+  # We'll just take the existence of the .ipfs directory as a sign that the ipfs user has been initialized
+  - name: Install ipfs and create the ipfs user
+    import_tasks: ./install.tasks.yml
+    when: ipfs_dir_stat.stat.exists == False
+
+  - name: Start the ipfs service
+    become: yes
+    systemd:
+      name: ipfs
+      enabled: yes
+      state: restarted

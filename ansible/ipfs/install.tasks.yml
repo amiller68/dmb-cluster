@@ -1,12 +1,30 @@
-- name: Install kubo on the service user's home directory
-  remote_user: ipfs
-  shell: "wget https://dist.ipfs.tech/kubo/v0.26.0/kubo_v0.26.0_linux-amd64.tar.gz"
+- name: Create the ipfs user
+  become: yes
+  user:
+    name: ipfs
+    state: present
+    shell: /bin/bash
+    home: /home/ipfs
+
+- name: Make sure the ipfs user's home directory exists
+  become: yes
+  file:
+    path: /home/ipfs
+    state: directory
+    owner: ipfs
+    group: ipfs
+    mode: 0755
+
+- name: Download kubo on the service user's home directory
+  become: yes
+  shell: "wget https://dist.ipfs.tech/kubo/v0.27.0/kubo_v0.27.0_linux-amd64.tar.gz"
   args:
     chdir: "/home/ipfs"
 
+# TODO: install and use ipfs-update to install and update the ipfs binary
 - name: Extract kubo
-  remote_user: ipfs
-  shell: "tar -xzvf kubo_v0.26.0_linux-amd64.tar.gz && rm kubo_v0.26.0_linux-amd64.tar.gz"
+  become: yes
+  shell: "tar -xzvf kubo_v0.27.0_linux-amd64.tar.gz && rm kubo_v0.27.0_linux-amd64.tar.gz"
   args:
     chdir: "/home/ipfs"
 
@@ -43,10 +61,10 @@
     group: root
     mode: '0644'
 
-- name: Reload systemd
+- name: Manually reload daemon (example)
   become: yes
-  systemd:
-    daemon_reload: yes
+  ansible.builtin.command: systemctl daemon-reload
+  ignore_errors: yes
 
 - name: Enable the ipfs service
   become: yes

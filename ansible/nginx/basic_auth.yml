@@ -1,0 +1,23 @@
+# basic_auth.yml
+# Creates a single user:password pair for basic auth.
+# - username: basic_auth_user
+# - hashed_password: password
+- hosts: all
+  name: Add a user to Nginx basic auth
+  tasks:
+  - name: Create the /etc/nginx/.htpasswd file if it does not exist
+    become: yes
+    file:
+      path: "/etc/nginx/.htpasswd"
+      state: touch
+      owner: www-data
+      group: www-data
+      mode: '0600'
+      state: present
+
+  # - name: Add our (single entry) user to the .htpasswd_<basic_auth_user> file
+  #   become: yes
+  #   shell: "echo -n '{{ basic_auth_user }}:' > /etc/nginx/.htpasswd_{{ basic_auth_user }} && openssl passwd -apr1 {{ password }} >> /etc/nginx/.htpasswd_{{ basic_auth_user }}"
+  - name: Add our (single entry) user to the .htpasswd file
+    become: yes
+    shell: "echo -n '{{ username }}:{{ hashed_password }}' >> /etc/nginx/.htpasswd"

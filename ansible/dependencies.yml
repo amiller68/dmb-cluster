@@ -17,13 +17,11 @@
       # TODO: can i scope these to specific groups?
       # register packages you want available to all users here
       with_items:
-        - gcc
         - git
-        - aria2
         - nginx
         - certbot
         - python3-certbot-nginx
         - openssl
-        - apache2-utils
         - python3
         - python3-pip
+        - wget

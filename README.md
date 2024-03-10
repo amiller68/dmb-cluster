@@ -5,6 +5,7 @@ One stop shop for administering and automating IPFS clusters.
 ## Dependencies
 - Python
 - Ansible
+- OpenSsl
 
 ## Disclaimer
 
