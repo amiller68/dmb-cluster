@@ -1,0 +1,80 @@
+# Initialize our Nginx Configuration
+# Setup the host to run web services over HTTPS
+# - email: The email address to use for SSL certificates
+
+- hosts: all
+  name: Expose services to the internet over Nginx
+  vars:
+    domain: {{ ansible_host }}
+  tasks:
+  - name: Remove default Nginx configuration
+    become: yes
+    file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+
+  # Root Domain Setup
+
+  - name: Make sure /var/www/html/{{ domain }} exists
+    become: yes
+    file:
+      path: "/var/www/html/{{ domain }}"
+      state: directory
+      owner:  www-data
+      group: www-data
+      mode: 0755
+
+  - name: Copy static site files assets
+    become: yes
+    copy:
+      src: ./static/index.html
+      dest: "/var/www/html/{{ domain }}"
+      owner:  www-data
+      group: www-data
+      mode: 0643
+
+  - name: Setup server block
+    become: yes
+    template:
+      src: ./config.j2
+      dest: "/etc/nginx/sites-available/{{ domain }}"
+
+  - name: Enable the server block
+    become: yes
+    file:
+      src: "/etc/nginx/sites-available/{{ domain }}"
+      dest: "/etc/nginx/sites-enabled/{{ domain }}"
+      state: link
+
+  - name: Setup domain SSL certificate
+    import_tasks: ./ssl.tasks.yml
+    vars:
+      target_domain: "{{ domain }}"
+      email: "{{ email }}"
+
+  # Setup ipfs sub domain. Setup a basic auth for the ipfs api.
+
+  - name: Setup server block
+    become: yes
+    template:
+      src: ./ipfs.config.j2
+      dest: "/etc/nginx/sites-available/ipfs.{{ domain }}"
+
+  - name: Enable the server block
+    become: yes
+    file:
+      src: "/etc/nginx/sites-available/ipfs.{{ domain }}"
+      dest: "/etc/nginx/sites-enabled/ipfs.{{ domain }}"
+      state: link
+
+  - name: Setup domain SSL certificate
+    import_tasks: ./ssl.tasks.yml
+    vars:
+      target_domain: "ipfs.{{ domain }}"
+      email: "{{ email }}"
+
+  - name: Restart Nginx
+    become: yes
+    service:
+      name: nginx
+      state: restarted

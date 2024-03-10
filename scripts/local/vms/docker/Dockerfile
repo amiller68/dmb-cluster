@@ -1,21 +1,30 @@
-# Use the official Debian image as a parent image
+# Use a base image that supports systemd
 FROM debian:latest
 
-# Set environment variables to non-interactive
+ENV container docker
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install SSH server and sudo
-RUN apt-get update
-RUN apt-get install -y openssh-server sudo python3 python3-pip
+# Enable systemd.
+RUN apt-get update && \
+    apt-get install -y systemd systemd-sysv openssh-server sudo python3 python3-pip && \
+    apt-get clean
+
+# Set the root password
 RUN echo 'root:root' | chpasswd
 
 # Add a passwordless sudoer admin user
-RUN useradd -m -s /bin/bash admin
-RUN echo 'admin:admin' | chpasswd
-RUN echo 'admin ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+RUN useradd -m -s /bin/bash admin && \
+    echo 'admin:admin' | chpasswd && \
+    echo 'admin ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+
+# Ensure that the SSH service is enabled so that it starts on boot
+RUN systemctl enable ssh
+
+# Create necessary directory for SSHD to function properly
+RUN mkdir /var/run/sshd
 
 # Expose the SSH port
 EXPOSE 22
 
-# Run the SSH server
-CMD ["/usr/sbin/sshd", "-D"]
+# Use exec form of CMD to ensure systemd is PID 1
+CMD [ "/usr/sbin/init" ]

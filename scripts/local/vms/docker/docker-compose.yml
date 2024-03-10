@@ -6,6 +6,9 @@ services:
     container_name: debian_vm_1
     ports:
       - "2222:22"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
     networks:
       - cluster_network
 
@@ -14,6 +17,9 @@ services:
     container_name: debian_vm_2
     ports:
       - "2223:22"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
     networks:
       - cluster_network
 
@@ -22,6 +28,9 @@ services:
     container_name: debian_vm_3
     ports:
       - "2224:22"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
     networks:
       - cluster_network
 
